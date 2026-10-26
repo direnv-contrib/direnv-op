@@ -12,15 +12,15 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
 # Loading secrets
 # ---------------------------------------------------------------------------
 
-@test "a reference exports a variable named after the item and the field" {
+@test "a reference exports a variable named after the field" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "hunter2"; }
     use_op_secret op://app/db/password
-    echo "DB_PASSWORD=$DB_PASSWORD"
+    echo "PASSWORD=$PASSWORD"
   '
   [[ "$status" -eq 0 ]]
-  [[ "${lines[-1]}" == "DB_PASSWORD=hunter2" ]]
+  [[ "${lines[-1]}" == "PASSWORD=hunter2" ]]
 }
 
 @test "NAME=reference exports the secret under that name" {
@@ -34,18 +34,18 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
   [[ "${lines[-1]}" == "DB_PASS=hunter2" ]]
 }
 
-@test "spaces and punctuation in the item and field become underscores" {
+@test "spaces and punctuation in the field become underscores" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "value"; }
     use_op_secret "op://app/my db/api key"
-    echo "MY_DB_API_KEY=$MY_DB_API_KEY"
+    echo "API_KEY=$API_KEY"
   '
   [[ "$status" -eq 0 ]]
-  [[ "${lines[-1]}" == "MY_DB_API_KEY=value" ]]
+  [[ "${lines[-1]}" == "API_KEY=value" ]]
 }
 
-@test "a field that already looks like a variable name is used as it is" {
+@test "an uppercase field is exported as it is" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "token-value"; }
@@ -56,7 +56,7 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
   [[ "${lines[-1]}" == "CLOUD_API_TOKEN=token-value" ]]
 }
 
-@test "an uppercase field behind a section is used as it is" {
+@test "an uppercase field behind a section is exported as it is" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "token-value"; }
@@ -67,29 +67,29 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
   [[ "${lines[-1]}" == "CLOUD_API_TOKEN=token-value" ]]
 }
 
-@test "a lowercase field with underscores still gets the item name in front" {
+@test "a lowercase field is uppercased" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "value"; }
     use_op_secret op://app/db/api_key
-    echo "DB_API_KEY=$DB_API_KEY"
+    echo "API_KEY=$API_KEY"
   '
   [[ "$status" -eq 0 ]]
-  [[ "${lines[-1]}" == "DB_API_KEY=value" ]]
+  [[ "${lines[-1]}" == "API_KEY=value" ]]
 }
 
-@test "a mixed-case field still gets the item name in front" {
+@test "a mixed-case field is uppercased without a separator" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "value"; }
     use_op_secret op://app/db/ApiKey
-    echo "DB_APIKEY=$DB_APIKEY"
+    echo "APIKEY=$APIKEY"
   '
   [[ "$status" -eq 0 ]]
-  [[ "${lines[-1]}" == "DB_APIKEY=value" ]]
+  [[ "${lines[-1]}" == "APIKEY=value" ]]
 }
 
-@test "an uppercase field with a query parameter is used as it is" {
+@test "an uppercase field with a query parameter is exported as it is" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "123456"; }
@@ -100,15 +100,26 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
   [[ "${lines[-1]}" == "OTP=123456" ]]
 }
 
+@test "the item name is not part of the derived name" {
+  run bash -c '
+    source "$TEST_HELPER"; load_libs
+    op() { echo "value"; }
+    use_op_secret op://app/first/token
+    echo "TOKEN=$TOKEN FIRST_TOKEN=${FIRST_TOKEN-unset}"
+  '
+  [[ "$status" -eq 0 ]]
+  [[ "${lines[-1]}" == "TOKEN=value FIRST_TOKEN=unset" ]]
+}
+
 @test "a section in the reference is skipped when naming the variable" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "value"; }
     use_op_secret op://app/db/credentials/password
-    echo "DB_PASSWORD=$DB_PASSWORD"
+    echo "PASSWORD=$PASSWORD"
   '
   [[ "$status" -eq 0 ]]
-  [[ "${lines[-1]}" == "DB_PASSWORD=value" ]]
+  [[ "${lines[-1]}" == "PASSWORD=value" ]]
 }
 
 @test "a query parameter is passed to op but not used in the name" {
@@ -116,11 +127,11 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
     source "$TEST_HELPER"; load_libs
     op() { echo "args: $*" >&2; echo "123456"; }
     use_op_secret "op://app/db/one-time password?attribute=otp"
-    echo "DB_ONE_TIME_PASSWORD=$DB_ONE_TIME_PASSWORD"
+    echo "ONE_TIME_PASSWORD=$ONE_TIME_PASSWORD"
   '
   [[ "$status" -eq 0 ]]
   [[ "$output" == *"args: read op://app/db/one-time password?attribute=otp"* ]]
-  [[ "${lines[-1]}" == "DB_ONE_TIME_PASSWORD=123456" ]]
+  [[ "${lines[-1]}" == "ONE_TIME_PASSWORD=123456" ]]
 }
 
 @test "NAME= is only split off a name, not off a query parameter" {
@@ -138,12 +149,12 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
 @test "several references can be loaded in one call" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
-    op() { case "$2" in *user*) echo "alice" ;; *pass*) echo "hunter2" ;; esac; }
-    use_op_secret op://app/db/user op://app/db/pass
-    echo "DB_USER=$DB_USER DB_PASS=$DB_PASS"
+    op() { case "$2" in *login*) echo "alice" ;; *secret*) echo "hunter2" ;; esac; }
+    use_op_secret op://app/db/login op://app/db/secret
+    echo "LOGIN=$LOGIN SECRET=$SECRET"
   '
   [[ "$status" -eq 0 ]]
-  [[ "${lines[-1]}" == "DB_USER=alice DB_PASS=hunter2" ]]
+  [[ "${lines[-1]}" == "LOGIN=alice SECRET=hunter2" ]]
 }
 
 @test "a multi-line secret keeps its inner newlines" {
@@ -235,8 +246,8 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
   run bash -c '
     source "$TEST_HELPER"; load_libs
     op() { echo "v"; }
-    use_op_secret op://app/1db/password
+    use_op_secret op://app/db/1st
   '
   [[ "$status" -eq 1 ]]
-  [[ "$output" == *"invalid variable name '1DB_PASSWORD'"* ]]
+  [[ "$output" == *"invalid variable name '1ST'"* ]]
 }

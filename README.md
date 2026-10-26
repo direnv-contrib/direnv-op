@@ -66,7 +66,7 @@ ln -s ~/.local/share/direnv-op/lib/*.sh ~/.config/direnv/lib/
 Call the functions from a `.envrc`:
 
 ```bash
-use_op_secret op://app/db/password            # exports DB_PASSWORD
+use_op_secret op://app/db/password            # exports PASSWORD
 use_op_secret DB_PASS=op://app/db/password    # the same secret, with an explicit name
 
 use_op_item app/db                            # every field of the item, one variable each
@@ -79,12 +79,14 @@ Takes [secret references](https://developer.1password.com/docs/cli/secret-refere
 
 | Argument | Result |
 |----------|--------|
-| `op://app/db/password` | One variable named after the item and the field, `DB_PASSWORD` |
-| `op://app/cloud/API_TOKEN` | A field that is already uppercase letters, digits and underscores is used as it is, `API_TOKEN` |
+| `op://app/db/password` | One variable named after the field, `PASSWORD` |
+| `op://app/cloud/API_TOKEN` | A field that is already uppercase keeps its name, `API_TOKEN` |
 | `NAME=op://app/db/password` | The same value, exported as `NAME` |
-| `op://app/db/one-time password?attribute=otp` | The one-time password, named `DB_ONE_TIME_PASSWORD` |
+| `op://app/db/one-time password?attribute=otp` | The one-time password, named `ONE_TIME_PASSWORD` |
 
-Names are uppercased, and characters outside `A-Z`, `0-9` and `_` become `_`. A multi-line value, such as a private key, keeps its inner newlines. A trailing newline is not part of the value, so add one back when you write a key to a file. A file attached to an item is read by its file name, `op://app/signing-key/key.pem`, and should get an explicit name because the derived one repeats the item and the file name.
+The default name is the last path segment, uppercased, and characters outside `A-Z`, `0-9` and `_` become `_`. This is the same rule as [direnv-aws](https://github.com/direnv-contrib/direnv-aws). The item is not part of the name, so two items with a field of the same name collide, and `NAME=` gives each its own.
+
+A multi-line value, such as a private key, keeps its inner newlines. A trailing newline is not part of the value, so add one back when you write a key to a file. A file attached to an item is read by its file name, `op://app/signing-key/key.pem`, and its default name is `KEY_PEM`.
 
 ### use_op_item
 
