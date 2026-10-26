@@ -1,6 +1,8 @@
 # use_op_secret: load 1Password secrets into the environment
 #
 #   use_op_secret op://app/db/password           exports DB_PASSWORD, named after the item and field
+#   use_op_secret op://app/cloud/API_TOKEN       exports API_TOKEN, a field that already looks like a
+#                                                variable name is used as it is
 #   use_op_secret DB_PASS=op://app/db/password   the same secret with an explicit variable name
 #
 # References use the 1Password secret reference syntax, query parameters included, for example
@@ -8,14 +10,19 @@
 # service account through OP_SERVICE_ACCOUNT_TOKEN.
 
 # $1: secret reference, op://vault/item[/section]/field[?query]
-# stdout: variable name built from the item and the field
+# stdout: variable name, the field itself when it is already uppercase letters, digits and
+# underscores (API_TOKEN), otherwise built from the item and the field
 _op_secret_name() {
   local path=${1#op://} item field
   path=${path%%\?*}
   item=${path#*/}
   item=${item%%/*}
   field=${path##*/}
-  printf '%s_%s' "$item" "$field" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9_' '_'
+  if [[ $field =~ ^[A-Z][A-Z0-9_]*$ ]]; then
+    printf '%s' "$field"
+  else
+    printf '%s_%s' "$item" "$field" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9_' '_'
+  fi
 }
 
 use_op_secret() {

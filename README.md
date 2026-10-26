@@ -80,10 +80,11 @@ Takes [secret references](https://developer.1password.com/docs/cli/secret-refere
 | Argument | Result |
 |----------|--------|
 | `op://app/db/password` | One variable named after the item and the field, `DB_PASSWORD` |
+| `op://app/cloud/API_TOKEN` | A field that is already uppercase letters, digits and underscores is used as it is, `API_TOKEN` |
 | `NAME=op://app/db/password` | The same value, exported as `NAME` |
 | `op://app/db/one-time password?attribute=otp` | The one-time password, named `DB_ONE_TIME_PASSWORD` |
 
-Names are uppercased, and characters outside `A-Z`, `0-9` and `_` become `_`. A multi-line value, such as a private key, keeps its inner newlines.
+Names are uppercased, and characters outside `A-Z`, `0-9` and `_` become `_`. A multi-line value, such as a private key, keeps its inner newlines. A trailing newline is not part of the value, so add one back when you write a key to a file. A file attached to an item is read by its file name, `op://app/signing-key/key.pem`, and should get an explicit name because the derived one repeats the item and the file name.
 
 ### use_op_item
 

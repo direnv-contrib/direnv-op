@@ -45,6 +45,61 @@ TEST_HELPER="$BATS_TEST_DIRNAME/helper.bash"
   [[ "${lines[-1]}" == "MY_DB_API_KEY=value" ]]
 }
 
+@test "a field that already looks like a variable name is used as it is" {
+  run bash -c '
+    source "$TEST_HELPER"; load_libs
+    op() { echo "token-value"; }
+    use_op_secret op://app/cloud/CLOUD_API_TOKEN
+    echo "CLOUD_API_TOKEN=$CLOUD_API_TOKEN"
+  '
+  [[ "$status" -eq 0 ]]
+  [[ "${lines[-1]}" == "CLOUD_API_TOKEN=token-value" ]]
+}
+
+@test "an uppercase field behind a section is used as it is" {
+  run bash -c '
+    source "$TEST_HELPER"; load_libs
+    op() { echo "token-value"; }
+    use_op_secret op://app/cloud/secrets/CLOUD_API_TOKEN
+    echo "CLOUD_API_TOKEN=$CLOUD_API_TOKEN"
+  '
+  [[ "$status" -eq 0 ]]
+  [[ "${lines[-1]}" == "CLOUD_API_TOKEN=token-value" ]]
+}
+
+@test "a lowercase field with underscores still gets the item name in front" {
+  run bash -c '
+    source "$TEST_HELPER"; load_libs
+    op() { echo "value"; }
+    use_op_secret op://app/db/api_key
+    echo "DB_API_KEY=$DB_API_KEY"
+  '
+  [[ "$status" -eq 0 ]]
+  [[ "${lines[-1]}" == "DB_API_KEY=value" ]]
+}
+
+@test "a mixed-case field still gets the item name in front" {
+  run bash -c '
+    source "$TEST_HELPER"; load_libs
+    op() { echo "value"; }
+    use_op_secret op://app/db/ApiKey
+    echo "DB_APIKEY=$DB_APIKEY"
+  '
+  [[ "$status" -eq 0 ]]
+  [[ "${lines[-1]}" == "DB_APIKEY=value" ]]
+}
+
+@test "an uppercase field with a query parameter is used as it is" {
+  run bash -c '
+    source "$TEST_HELPER"; load_libs
+    op() { echo "123456"; }
+    use_op_secret "op://app/db/OTP?attribute=otp"
+    echo "OTP=$OTP"
+  '
+  [[ "$status" -eq 0 ]]
+  [[ "${lines[-1]}" == "OTP=123456" ]]
+}
+
 @test "a section in the reference is skipped when naming the variable" {
   run bash -c '
     source "$TEST_HELPER"; load_libs
