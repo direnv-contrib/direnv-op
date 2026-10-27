@@ -67,6 +67,21 @@ mkdir -p ~/.config/direnv/lib
 ln -s ~/.local/share/direnv-op/lib/*.sh ~/.config/direnv/lib/
 ```
 
+### Pinned in a project
+
+To use a helper without installing anything, pin it in a project's `.envrc` with direnv's `source_url`. This also works for teammates and CI, which only need direnv. Ask direnv for the hash of the file, then put it in the `.envrc`:
+
+```bash
+direnv fetchurl https://raw.githubusercontent.com/direnv-contrib/direnv-op/v0.2.0/lib/op_secret.sh
+```
+
+```bash
+source_url "https://raw.githubusercontent.com/direnv-contrib/direnv-op/v0.2.0/lib/op_secret.sh" "sha256-…"
+use_op_secret op://app/db/password
+```
+
+Replace `v0.2.0` with the release you want. direnv refuses to load a file whose content does not match the hash, so a tag that is later changed cannot swap the code under you.
+
 ## Usage
 
 Call the functions from a `.envrc`:
