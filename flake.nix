@@ -60,13 +60,13 @@
           ...
         }:
         {
-          options.programs.direnv-op.enable = lib.mkEnableOption "the direnv-op helpers";
+          options.programs.direnv.contrib.op.enable = lib.mkEnableOption "the direnv-op helpers";
 
-          config = lib.mkIf config.programs.direnv-op.enable {
+          config = lib.mkIf config.programs.direnv.contrib.op.enable {
             assertions = [
               {
                 assertion = config.programs.direnv.enable;
-                message = "programs.direnv-op.enable requires programs.direnv.enable = true";
+                message = "programs.direnv.contrib.op.enable requires programs.direnv.enable = true";
               }
             ];
 

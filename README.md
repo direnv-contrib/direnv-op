@@ -37,12 +37,15 @@ Add the flake as an input:
 inputs.direnv-op.url = "github:direnv-contrib/direnv-op";
 ```
 
-With Home Manager, import the module and enable it. It sources the scripts from direnv's standard library, so `programs.direnv.enable` must be on as well:
+With Home Manager, import the module and enable it under `programs.direnv.contrib`, next to direnv itself. It sources the scripts from direnv's standard library, so `programs.direnv.enable` must be on:
 
 ```nix
 imports = [ inputs.direnv-op.homeModules.default ];
 
-programs.direnv-op.enable = true;
+programs.direnv = {
+  enable = true;
+  contrib.op.enable = true;
+};
 ```
 
 Without Home Manager, install the package, which places the scripts in `share/direnv-op`:
