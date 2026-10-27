@@ -52,7 +52,7 @@
     )
     // {
       # Home Manager module: enabling it sources the helpers from direnv's standard library
-      homeManagerModules.default =
+      homeModules.default =
         {
           config,
           lib,
@@ -63,6 +63,13 @@
           options.programs.direnv-op.enable = lib.mkEnableOption "the direnv-op helpers";
 
           config = lib.mkIf config.programs.direnv-op.enable {
+            assertions = [
+              {
+                assertion = config.programs.direnv.enable;
+                message = "programs.direnv-op.enable requires programs.direnv.enable = true";
+              }
+            ];
+
             programs.direnv.stdlib = ''
               for lib in ${self.packages.${pkgs.stdenv.hostPlatform.system}.default}/share/direnv-op/*.sh; do
                 source "$lib"
