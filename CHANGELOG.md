@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/direnv-contrib/direnv-op/compare/v0.2.0...v0.3.0) (2026-10-27)
+
+
+### Features
+
+* add a Home Manager module ([7beab8d](https://github.com/direnv-contrib/direnv-op/commit/7beab8d492ff30ed096aa96015b41b030180a47b))
+
 ## [0.2.0](https://github.com/direnv-contrib/direnv-op/compare/v0.1.0...v0.2.0) (2026-10-26)
 
 
