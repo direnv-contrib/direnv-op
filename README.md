@@ -4,13 +4,13 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![CI](https://github.com/direnv-contrib/direnv-op/actions/workflows/ci.yml/badge.svg)](https://github.com/direnv-contrib/direnv-op/actions/workflows/ci.yml)
 
-Stop copying secrets into `.env` files. `direnv-op` adds two functions to your `.envrc`: `use_op_secret` reads secrets by 1Password secret reference, and `use_op_item` loads every field of an item. Both run `op` when you enter a directory and export the values as environment variables.
+Stop copying secrets into `.env` files. `direnv-op` adds two functions to your `.envrc`: `use op_secret` reads secrets by 1Password secret reference, and `use op_item` loads every field of an item. Both run `op` when you enter a directory and export the values as environment variables.
 
 ## Requirements
 
 - [direnv](https://direnv.net) (`direnv`)
 - [1Password CLI](https://developer.1password.com/docs/cli/) (`op`), signed in through the desktop app integration or a service account
-- [jq](https://jqlang.org) (`jq`) — only for `use_op_item`
+- [jq](https://jqlang.org) (`jq`) — only for `use op_item`
 
 **macOS (Homebrew):**
 
@@ -80,24 +80,24 @@ direnv fetchurl https://raw.githubusercontent.com/direnv-contrib/direnv-op/v0.2.
 
 ```bash
 source_url "https://raw.githubusercontent.com/direnv-contrib/direnv-op/v0.2.0/lib/op_secret.sh" "sha256-…"
-use_op_secret op://app/db/password
+use op_secret op://app/db/password
 ```
 
 Replace `v0.2.0` with the release you want. direnv refuses to load a file whose content does not match the hash, so a tag that is later changed cannot swap the code under you.
 
 ## Usage
 
-Call the functions from a `.envrc`:
+Call the helpers from a `.envrc` with direnv's `use`. Each helper is a function named `use_<name>`, and `use <name>` calls it:
 
 ```bash
-use_op_secret op://app/db/password            # exports PASSWORD
-use_op_secret DB_PASS=op://app/db/password    # the same secret, with an explicit name
+use op_secret op://app/db/password            # exports PASSWORD
+use op_secret DB_PASS=op://app/db/password    # the same secret, with an explicit name
 
-use_op_item app/db                            # every field of the item, one variable each
-use_op_item DB=app/db                         # the same, with a DB_ prefix
+use op_item app/db                            # every field of the item, one variable each
+use op_item DB=app/db                         # the same, with a DB_ prefix
 ```
 
-### use_op_secret
+### use op_secret
 
 Takes [secret references](https://developer.1password.com/docs/cli/secret-reference-syntax/), `op://vault/item/field` or `op://vault/item/section/field`, including query parameters such as `?attribute=otp`.
 
@@ -112,7 +112,7 @@ The default name is the last path segment, uppercased, and characters outside `A
 
 A multi-line value, such as a private key, keeps its inner newlines. A trailing newline is not part of the value, so add one back when you write a key to a file. A file attached to an item is read by its file name, `op://app/signing-key/key.pem`, and its default name is `KEY_PEM`.
 
-### use_op_item
+### use op_item
 
 Runs `op item get --format json --reveal` and exports every field that has a label and a value.
 
@@ -129,7 +129,7 @@ Fields without a label or a value are skipped. When two fields share a label, th
 The helpers use whatever the `op` CLI is signed in with:
 
 - **Desktop app integration:** if the 1Password app is locked, `op` asks you to unlock it when you enter the directory.
-- **Service account:** set `OP_SERVICE_ACCOUNT_TOKEN` in your environment, for example in CI. Service accounts need the vault in the reference, so `use_op_item` should be called with `vault/item`.
+- **Service account:** set `OP_SERVICE_ACCOUNT_TOKEN` in your environment, for example in CI. Service accounts need the vault in the reference, so `use op_item` should be called with `vault/item`.
 
 ## Behavior
 
