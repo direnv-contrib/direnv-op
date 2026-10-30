@@ -1,2 +1,13 @@
 result
 .direnv
+
+# env file
+.env
+
+# direnv
+.env.local
+.envrc.local
+
+# Local nix build result symlinks (point into /nix/store).
+.nix
+.nix-*-link
