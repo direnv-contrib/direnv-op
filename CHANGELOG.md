@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/direnv-contrib/direnv-op/compare/v0.3.0...v0.3.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **ci:** merge with the App token so main gets its CI run ([#7](https://github.com/direnv-contrib/direnv-op/issues/7)) ([1b58db7](https://github.com/direnv-contrib/direnv-op/commit/1b58db7797d6f202666082b998917d0bd4715f06))
+
 ## [0.3.0](https://github.com/direnv-contrib/direnv-op/compare/v0.2.0...v0.3.0) (2026-10-27)
 
 
